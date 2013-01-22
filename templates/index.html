@@ -38,6 +38,19 @@
                     });
                     $('#markdown').text(md);
                 });
+				marked.setOptions({
+					gfm: true,
+					tables: true,
+					breaks: true,
+					pedantic: false,
+					sanitize: true,
+					highlight: function(code, lang) {
+						if (lang === 'js') {
+						  return highlighter.javascript(code);
+						}
+						return code;
+					}
+				});
             });
         </script>
         <script>
