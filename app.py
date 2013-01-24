@@ -11,12 +11,19 @@ app.config.from_object(settings)
 dropbox = Dropbox(app)
 dropbox.register_blueprint(url_prefix='/dropbox')
 
-@app.route('/', methods=('GET', 'POST'))
-def home(text=''):
+@app.route('/login')
+def login():
     if not dropbox.is_authenticated:
         return u'Click <a href="%s">here</a> to login with Dropbox.' % \
             dropbox.login_url
+    return redirect(url_for('home', text=md))
 
+@app.route('/', methods=('GET', 'POST'))
+def home():
+    if dropbox.is_authenticated:
+        loggedin = True
+    else:
+        loggedin = False
     # to save current file in Dropbox
     if request and request.method == 'POST':
         md = request.form['markdown']
@@ -31,20 +38,14 @@ def home(text=''):
             if md:
                 client = dropbox.client
                 filename = secure_filename(name)
-
-                # Actual uploading process
                 result = client.put_file('/' + filename, md)
-
                 path = result['path'].lstrip('/')
-                return redirect(url_for('success', filename=path))
+                return render_template('index.html', text=md, uploaded=filename, loggedin=loggedin)
+
     if request and request.method == 'GET' and request.query_string:
-        return render_template('index.html', text=request.args.get('text'))
+        return render_template('index.html', text=request.args.get('text'), loggedin=loggedin)
 
-    return render_template('index.html', text=text)
-
-@app.route('/success/<path:filename>')
-def success(filename):
-    return u'File successfully uploaded as /%s' % filename
+    return render_template('index.html', loggedin=loggedin)
 
 @app.route('/upload', methods=('GET', 'POST'))
 def upload():
@@ -64,5 +65,3 @@ if __name__ == '__main__':
     app.debug = True
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
-

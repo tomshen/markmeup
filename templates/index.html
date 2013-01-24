@@ -1,71 +1,88 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Mark Me Up!</title>
-        <link  rel="stylesheet" type="text/css" href="/static/style.css">
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-    </head>
-    <body>
-        <div id = "left" class='container'>
-            <h1 id='pageheader'>Mark Me Up!</h1>
-            <form action="" method="post">
-                <textarea name='markdown' id='markdown' class="markdown">{{text}}</textarea>
-                <input class = "button" type="submit" value="Save to Dropbox">
-            </form>
-         </div>
-        <div id = "right" class='container'>
-            <div id="button-container" class="button-container">
-                <form class='button' action="" method="get">
-                    <span class='dropbox-button'>Choose from Dropbox </span>
-                    <input id="db-chooser" type="dropbox-chooser" name="selected-file" data-link-type="direct" style="visibility: hidden;">
-                </form>
-                <a class='button' href='/upload'>Upload from Computer</a>
-            </div>
-            <div id='markup' class="markup"></div>
-        </div>
+  <head>
+    <title>Mark Me Up!</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/prettify.css">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div id = "left" class='container'>
+      <h1 id='pageheader'>Mark Me Up!</h1>
+      <form action="" method="post">
+        <textarea name='markdown' id='markdown' class="markdown">{{text}}</textarea>
+        <input class = "button" type="submit" value="Save to Dropbox">
+      </form>
+     </div>
+    <div id = "right" class='container'>
+      <div id="button-container" class="button-container">
+        {% if loggedin %}
+          <a class='button' href=''>Logged in to Dropbox</a>
+        {% else %}
+          <a class='button' href='/login'>Login to Dropbox</a>
+        {% endif %}
+        <form class='button' action="" method="get">
+          <span class='dropbox-button'>Choose from Dropbox </span>
+          <input id="db-chooser" type="dropbox-chooser" name="selected-file" data-link-type="direct" style="visibility: hidden;">
+        </form>
+        <a class='button' href='/upload'>Upload from Computer</a>
+      </div>
+      <div id='markup' class="markup"></div>
+    </div>
 
-        <!-- Scripts -->
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script src='/static/js/marked.js'></script>
-        <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropbox.js" id="dropboxjs" data-app-key="bj3wjzevji6tz0s"></script>
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $('#db-chooser').on("DbxChooserSuccess", function(e) {
-                    e = e.originalEvent;
-                    var md = '';
-                    jQuery.get(e.files[0].link, function(data) {
-                        md = data;
-                    });
-                    $('#markdown').text(md);
-                });
-				marked.setOptions({
-					gfm: true,
-					tables: true,
-					breaks: true,
-					pedantic: false,
-					sanitize: true,
-					highlight: function(code, lang) {
-						if (lang === 'js') {
-						  return highlighter.javascript(code);
-						}
-						return code;
-					}
-				});
-            });
-        </script>
-        <script>
-            $(document).ready(function() {
-                $('#markup').html(marked($("#markdown").val()));
-                $('#markdown').bind('input propertychange', function() {
-                    $('#markup').html(marked($(this).val()));
-                });
+    <!-- Scripts -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src='/static/js/marked.js'></script>
+    <script src='/static/js/tabby.min.js'></script>
+    <script src='/static/js/prettify/prettify.js'></script>
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropbox.js" id="dropboxjs" data-app-key="bj3wjzevji6tz0s"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('#db-chooser').on("DbxChooserSuccess", function(e) {
+          e = e.originalEvent;
+          var md = '';
+          jQuery.get(e.files[0].link, function(data) {
+            md = data;
+          });
+          $('#markdown').text(md);
+        });
+        marked.setOptions({
+          gfm: true,
+          tables: true,
+          breaks: true,
+          pedantic: false,
+          sanitize: true,
+          highlight: function(code, lang) {
+            if (lang === 'js') {
+              return highlighter.javascript(code);
+            }
+            return code;
+          }
+        });
+        {% if uploaded %}
+          alert('You have uploaded {{uploaded}} to Dropbox!');
+        {% endif %}
+      });
+    </script>
+    <script>
+      $(document).ready(function() {
+        $('#markup').html(marked($("#markdown").val()));
+        $('#markdown').bind('input propertychange', function() {
+          $('#markup').html(marked($(this).val()));
+          $('pre').addClass('prettyprint');
+          $('code').addClass('prettyprint');
+          prettyPrint();
+        });
 
-                $('.dropbox-chooser').css('background-image ', 'none');
-                $('.dropbox-chooser').css('display', 'none');
-                $('.dropbox-chooser').css('margin-right', '0');
-                $('.dropbox-chooser').append("Choose from dropbox");
-            });
-        </script>
-        
-    </body>
+        var tabby_opts = {tabString:'    '};
+        $('#markdown').tabby(tabby_opts);
+
+        $('.dropbox-chooser').css('background-image ', 'none');
+        $('.dropbox-chooser').css('display', 'none');
+        $('.dropbox-chooser').css('margin-right', '0');
+        $('.dropbox-chooser').append("Choose from dropbox");
+      });
+    </script>
+    
+  </body>
 </html>
