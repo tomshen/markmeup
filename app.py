@@ -14,8 +14,7 @@ dropbox.register_blueprint(url_prefix='/dropbox')
 @app.route('/login')
 def login():
     if not dropbox.is_authenticated:
-        return u'Click <a href="%s">here</a> to login with Dropbox.' % \
-            dropbox.login_url
+        return redirect(dropbox.login_url)
     return redirect(url_for('home', text=md))
 
 @app.route('/', methods=('GET', 'POST'))
