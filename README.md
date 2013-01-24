@@ -10,3 +10,5 @@
 * Write a `print.css`
 * Allow choosing filenames when saving
 * Fix Dropbox chooser
+* Add [Metro UI](https://github.com/olton/Metro-UI-CSS)
+* "Freeze" left div so it stays on screen when you scroll down
